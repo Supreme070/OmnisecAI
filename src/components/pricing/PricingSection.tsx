@@ -1,3 +1,4 @@
+
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -38,7 +39,7 @@ const PricingTier = ({
         ))}
       </ul>
       <Button className="button-gradient w-full">
-        Start Trading
+        Get Started
       </Button>
     </div>
   </CardSpotlight>
@@ -55,7 +56,7 @@ export const PricingSection = () => {
           className="text-5xl md:text-6xl font-normal mb-6"
         >
           Choose Your{" "}
-          <span className="text-gradient font-medium">Trading Plan</span>
+          <span className="text-gradient font-medium">Security Plan</span>
         </motion.h2>
         <motion.p
           initial={{ opacity: 0, y: 20 }}
@@ -63,46 +64,50 @@ export const PricingSection = () => {
           transition={{ delay: 0.1, duration: 0.5 }}
           className="text-lg text-gray-400"
         >
-          Select the perfect trading plan with advanced features and competitive fees
-        </motion.p>
+          Comprehensive AI cybersecurity solutions tailored to your organization's needs
+        </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
         <PricingTier
-          name="Basic Trader"
-          price="$0"
-          description="Perfect for beginners starting their crypto journey"
+          name="Starter Shield"
+          price="$99"
+          description="Essential AI security for small teams and projects"
           features={[
-            "Basic spot trading",
-            "Market & limit orders",
-            "Basic market analysis",
-            "Email support"
+            "Basic AI model scanning",
+            "Standard threat detection",
+            "Email support",
+            "Compliance reporting",
+            "Up to 10 AI models"
           ]}
         />
         <PricingTier
-          name="Pro Trader"
-          price="$29"
-          description="Advanced features for serious traders"
+          name="Enterprise Guardian"
+          price="$499"
+          description="Advanced protection for enterprise AI deployments"
           features={[
-            "Advanced trading tools",
-            "Margin trading up to 10x",
-            "Advanced technical analysis",
+            "Advanced LLM red teaming",
+            "Real-time threat intelligence",
+            "Cloud infrastructure protection",
+            "24/7 security monitoring",
             "Priority support",
-            "API access"
+            "Custom integrations",
+            "Unlimited AI models"
           ]}
           isPopular
         />
         <PricingTier
-          name="Institutional"
+          name="Mission Critical"
           price="Custom"
-          description="Enterprise-grade solutions for institutions"
+          description="Maximum security for critical AI infrastructure"
           features={[
-            "Custom trading solutions",
-            "Unlimited trading volume",
-            "OTC desk access",
-            "Dedicated account manager",
-            "Custom API integration",
-            "24/7 priority support"
+            "Custom security architecture",
+            "Dedicated security team",
+            "Advanced threat modeling",
+            "Zero-trust AI deployment",
+            "Compliance automation",
+            "24/7 incident response",
+            "White-glove onboarding"
           ]}
         />
       </div>

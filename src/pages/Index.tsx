@@ -1,5 +1,6 @@
+
 import { motion } from "framer-motion";
-import { ArrowRight, Command } from "lucide-react";
+import { ArrowRight, Shield, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Navigation from "@/components/Navigation";
 import { FeaturesSection } from "@/components/features/FeaturesSection";
@@ -33,19 +34,19 @@ const Index = () => {
           className="inline-block mb-4 px-4 py-1.5 rounded-full glass"
         >
           <span className="text-sm font-medium">
-            <Command className="w-4 h-4 inline-block mr-2" />
-            Next-gen crypto trading platform
+            <Shield className="w-4 h-4 inline-block mr-2" />
+            Next-gen AI cybersecurity platform
           </span>
         </motion.div>
         
         <div className="max-w-4xl relative z-10">
           <h1 className="text-5xl md:text-7xl font-normal mb-4 tracking-tight text-left">
             <span className="text-gray-200">
-              <TextGenerateEffect words="Trade crypto with" />
+              <TextGenerateEffect words="Secure your AI with" />
             </span>
             <br />
             <span className="text-white font-medium">
-              <TextGenerateEffect words="confidence & security" />
+              <TextGenerateEffect words="confidence & precision" />
             </span>
           </h1>
           
@@ -55,8 +56,9 @@ const Index = () => {
             transition={{ delay: 0.4 }}
             className="text-lg md:text-xl text-gray-200 mb-8 max-w-2xl text-left"
           >
-            Experience seamless cryptocurrency trading with advanced features, real-time analytics, and institutional-grade security.{" "}
-            <span className="text-white">Start trading in minutes.</span>
+            Comprehensive cybersecurity solution for AI models, systems, and cloud infrastructure. 
+            Protect your LLMs and AI assets with enterprise-grade security tools.{" "}
+            <span className="text-white">Deploy with confidence.</span>
           </motion.p>
           
           <motion.div
@@ -66,10 +68,10 @@ const Index = () => {
             className="flex flex-col sm:flex-row gap-4 items-start"
           >
             <Button size="lg" className="button-gradient">
-              Start Trading Now
+              Start Securing Now
             </Button>
             <Button size="lg" variant="link" className="text-white">
-              View Markets <ArrowRight className="ml-2 w-4 h-4" />
+              View Security Features <ArrowRight className="ml-2 w-4 h-4" />
             </Button>
           </motion.div>
         </div>
@@ -80,12 +82,16 @@ const Index = () => {
           transition={{ delay: 0.6 }}
           className="relative mx-auto max-w-5xl mt-20"
         >
-          <div className="glass rounded-xl overflow-hidden">
+          <div className="glass rounded-xl overflow-hidden relative">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-blue-500/5" />
             <img
               src="/lovable-uploads/c32c6788-5e4a-4fee-afee-604b03113c7f.png"
-              alt="CryptoTrade Dashboard"
-              className="w-full h-auto"
+              alt="DONE AI Cybersecurity Dashboard"
+              className="w-full h-auto relative z-10"
             />
+            <div className="absolute top-4 left-4 bg-black/50 backdrop-blur-sm rounded-lg px-3 py-1">
+              <span className="text-sm font-medium text-green-400">DONE Security Platform</span>
+            </div>
           </div>
         </motion.div>
       </motion.section>
@@ -125,13 +131,13 @@ const Index = () => {
           className="bg-[#0A0A0A]/80 backdrop-blur-lg border border-white/10 rounded-2xl p-8 md:p-12 text-center relative z-10"
         >
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Ready to start trading?
+            Ready to secure your AI infrastructure?
           </h2>
           <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Join thousands of traders who have already discovered the power of our platform.
+            Join leading organizations who trust DONE to protect their AI models, LLMs, and cloud infrastructure.
           </p>
           <Button size="lg" className="button-gradient">
-            Create Account
+            Get Started
             <ArrowRight className="ml-2 w-4 h-4" />
           </Button>
         </motion.div>
