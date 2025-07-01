@@ -65,7 +65,7 @@ export const PricingSection = () => {
           className="text-lg text-gray-400"
         >
           Comprehensive AI cybersecurity solutions tailored to your organization's needs
-        </p>
+        </motion.p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
