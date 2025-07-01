@@ -1,9 +1,10 @@
 
 import { useState, useEffect } from "react";
-import { Shield, Menu, Zap } from "lucide-react";
+import { Menu } from "lucide-react";
 import { Button } from "./ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
 import ThemeToggle from "./ThemeToggle";
+import { DoneLogo } from "./DoneLogo";
 
 const Navigation = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -57,15 +58,7 @@ const Navigation = () => {
     >
       <div className="mx-auto h-full px-6">
         <nav className="flex items-center justify-between h-full">
-          <div className="flex items-center gap-2">
-            <div className="relative">
-              <Shield className="w-5 h-5 text-primary" />
-              <Zap className="w-2 h-2 text-blue-400 absolute -top-0.5 -right-0.5" />
-            </div>
-            <span className="font-bold text-base bg-gradient-to-r from-primary to-blue-400 bg-clip-text text-transparent">
-              DONE
-            </span>
-          </div>
+          <DoneLogo size="sm" animated={true} />
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-6">
