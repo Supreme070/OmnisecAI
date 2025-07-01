@@ -43,7 +43,7 @@ const Index = () => {
               <TextGenerateEffect words="Secure your AI with" />
             </span>
             <br />
-            <span className="text-foreground font-medium">
+            <span className="text-foreground font-bold">
               <TextGenerateEffect words="confidence & precision" />
             </span>
           </h1>
