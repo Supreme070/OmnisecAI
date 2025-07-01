@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { Shield, Menu, Zap } from "lucide-react";
 import { Button } from "./ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
+import ThemeToggle from "./ThemeToggle";
 
 const Navigation = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -50,8 +51,8 @@ const Navigation = () => {
     <header
       className={`fixed top-3.5 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 rounded-full ${
         isScrolled 
-          ? "h-14 bg-[#1B1B1B]/40 backdrop-blur-xl border border-white/10 scale-95 w-[90%] max-w-2xl" 
-          : "h-14 bg-[#1B1B1B] w-[95%] max-w-3xl"
+          ? "h-14 bg-background/40 backdrop-blur-xl border border-border scale-95 w-[90%] max-w-2xl" 
+          : "h-14 bg-background/80 backdrop-blur-lg border border-border w-[95%] max-w-3xl"
       }`}
     >
       <div className="mx-auto h-full px-6">
@@ -83,6 +84,7 @@ const Navigation = () => {
                 {item.name}
               </a>
             ))}
+            <ThemeToggle />
             <Button 
               onClick={() => scrollToSection('cta')}
               size="sm"
@@ -93,14 +95,15 @@ const Navigation = () => {
           </div>
 
           {/* Mobile Navigation */}
-          <div className="md:hidden">
+          <div className="md:hidden flex items-center gap-2">
+            <ThemeToggle />
             <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
               <SheetTrigger asChild>
                 <Button variant="outline" size="icon" className="glass">
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent className="bg-[#1B1B1B]">
+              <SheetContent className="bg-background/95 backdrop-blur-lg border-border">
                 <div className="flex flex-col gap-4 mt-8">
                   {navItems.map((item) => (
                     <a
