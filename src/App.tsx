@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ToastProvider } from "@/contexts/ToastContext";
+import { ErrorProvider, ErrorContextBoundary } from "@/contexts/ErrorContext";
 import { useAuth } from "@/stores/authStore";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { ErrorBoundary } from "@/components/error/ErrorBoundary";
@@ -34,7 +35,34 @@ import OrganizationSettings from "./pages/OrganizationSettings";
 import ApiKeyManagement from "./pages/ApiKeyManagement";
 import SecuritySettings from "./pages/SecuritySettings";
 
-const queryClient = new QueryClient();
+// Enhanced QueryClient with better error handling
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: (failureCount, error: any) => {
+        // Don't retry on 4xx errors (client errors)
+        if (error?.response?.status >= 400 && error?.response?.status < 500) {
+          return false;
+        }
+        // Retry up to 3 times for other errors
+        return failureCount < 3;
+      },
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      cacheTime: 10 * 60 * 1000, // 10 minutes
+    },
+    mutations: {
+      retry: (failureCount, error: any) => {
+        // Don't retry mutations on client errors
+        if (error?.response?.status >= 400 && error?.response?.status < 500) {
+          return false;
+        }
+        // Only retry once for mutations
+        return failureCount < 1;
+      },
+    },
+  },
+});
 
 const AppContent = () => {
   const { initialize } = useAuth();
@@ -229,9 +257,13 @@ const App = () => (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <ToastProvider>
-          <TooltipProvider>
-            <AppContent />
-          </TooltipProvider>
+          <ErrorProvider>
+            <ErrorContextBoundary>
+              <TooltipProvider>
+                <AppContent />
+              </TooltipProvider>
+            </ErrorContextBoundary>
+          </ErrorProvider>
         </ToastProvider>
       </ThemeProvider>
     </QueryClientProvider>

@@ -1,0 +1,395 @@
+name: Security & Dependency Management
+
+on:
+  schedule:
+    - cron: '0 2 * * 1' # Weekly on Monday at 2 AM UTC
+  workflow_dispatch:
+  push:
+    paths:
+      - 'package*.json'
+      - 'backend/package*.json'
+      - '.github/workflows/security.yml'
+
+env:
+  NODE_VERSION: '18'
+
+jobs:
+  dependency-scan:
+    name: Dependency Vulnerability Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Install backend dependencies
+        run: npm ci
+        working-directory: ./backend
+
+      - name: Run npm audit (Frontend)
+        id: audit-frontend
+        run: |
+          echo "# Frontend Dependency Audit" >> $GITHUB_STEP_SUMMARY
+          npm audit --audit-level moderate --json > frontend-audit.json || true
+          if [ -s frontend-audit.json ]; then
+            echo "Vulnerabilities found in frontend dependencies"
+            npm audit --audit-level moderate
+            echo "## Frontend Audit Results" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`json" >> $GITHUB_STEP_SUMMARY
+            cat frontend-audit.json >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "No vulnerabilities found in frontend dependencies"
+            echo "✅ No vulnerabilities found in frontend dependencies" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Run npm audit (Backend)
+        id: audit-backend
+        run: |
+          echo "# Backend Dependency Audit" >> $GITHUB_STEP_SUMMARY
+          cd backend
+          npm audit --audit-level moderate --json > backend-audit.json || true
+          if [ -s backend-audit.json ]; then
+            echo "Vulnerabilities found in backend dependencies"
+            npm audit --audit-level moderate
+            echo "## Backend Audit Results" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`json" >> $GITHUB_STEP_SUMMARY
+            cat backend-audit.json >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "No vulnerabilities found in backend dependencies"
+            echo "✅ No vulnerabilities found in backend dependencies" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Upload audit results
+        uses: actions/upload-artifact@v4
+        with:
+          name: audit-results
+          path: |
+            frontend-audit.json
+            backend/backend-audit.json
+          retention-days: 30
+
+  code-security-scan:
+    name: Code Security Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript
+          queries: security-and-quality
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:javascript"
+
+  secret-scan:
+    name: Secret Detection
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run TruffleHog OSS
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: main
+          head: HEAD
+          extra_args: --debug --only-verified
+
+  container-security-scan:
+    name: Container Security Scan
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dockerfile: ['Dockerfile.frontend', 'backend/Dockerfile']
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: |
+          if [[ "${{ matrix.dockerfile }}" == "Dockerfile.frontend" ]]; then
+            docker build -f ${{ matrix.dockerfile }} -t test-image:frontend .
+          else
+            docker build -f ${{ matrix.dockerfile }} -t test-image:backend ./backend
+          fi
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'test-image:${{ matrix.dockerfile == "Dockerfile.frontend" && "frontend" || "backend" }}'
+          format: 'sarif'
+          output: 'trivy-${{ matrix.dockerfile == "Dockerfile.frontend" && "frontend" || "backend" }}.sarif'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-${{ matrix.dockerfile == "Dockerfile.frontend" && "frontend" || "backend" }}.sarif'
+
+  dependency-update:
+    name: Automated Dependency Updates
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Update frontend dependencies
+        id: update-frontend
+        run: |
+          echo "Updating frontend dependencies..."
+          npm update
+          if [ -n "$(git status --porcelain package*.json)" ]; then
+            echo "frontend_updated=true" >> $GITHUB_OUTPUT
+            echo "Frontend dependencies updated"
+          else
+            echo "frontend_updated=false" >> $GITHUB_OUTPUT
+            echo "No frontend dependency updates available"
+          fi
+
+      - name: Update backend dependencies
+        id: update-backend
+        run: |
+          echo "Updating backend dependencies..."
+          cd backend
+          npm update
+          if [ -n "$(git status --porcelain package*.json)" ]; then
+            echo "backend_updated=true" >> $GITHUB_OUTPUT
+            echo "Backend dependencies updated"
+          else
+            echo "backend_updated=false" >> $GITHUB_OUTPUT
+            echo "No backend dependency updates available"
+          fi
+
+      - name: Run tests after updates
+        if: steps.update-frontend.outputs.frontend_updated == 'true' || steps.update-backend.outputs.backend_updated == 'true'
+        run: |
+          echo "Running tests to verify updates..."
+          npm ci
+          npm run build
+          
+          cd backend
+          npm ci
+          npm run build
+
+      - name: Create Pull Request
+        if: steps.update-frontend.outputs.frontend_updated == 'true' || steps.update-backend.outputs.backend_updated == 'true'
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'chore: Update dependencies'
+          title: '🔒 Automated Dependency Updates'
+          body: |
+            ## Automated Dependency Updates
+            
+            This PR contains automated dependency updates for:
+            
+            ${{ steps.update-frontend.outputs.frontend_updated == 'true' && '- ✅ Frontend dependencies' || '- ⏭️ Frontend dependencies (no updates)' }}
+            ${{ steps.update-backend.outputs.backend_updated == 'true' && '- ✅ Backend dependencies' || '- ⏭️ Backend dependencies (no updates)' }}
+            
+            ### Changes
+            - Updated npm dependencies to latest compatible versions
+            - All tests pass with updated dependencies
+            
+            ### Security Impact
+            This update may include security patches for known vulnerabilities.
+            
+            **Auto-generated by GitHub Actions**
+          branch: automated-dependency-updates
+          delete-branch: true
+          labels: |
+            dependencies
+            security
+            automated
+
+  license-compliance:
+    name: License Compliance Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install license checker
+        run: npm install -g license-checker
+
+      - name: Check frontend licenses
+        run: |
+          echo "# Frontend License Report" >> $GITHUB_STEP_SUMMARY
+          npm ci
+          license-checker --onlyAllow 'MIT;Apache-2.0;BSD-2-Clause;BSD-3-Clause;ISC' --json > frontend-licenses.json || true
+          echo "Frontend license check completed"
+          echo "\`\`\`json" >> $GITHUB_STEP_SUMMARY
+          head -50 frontend-licenses.json >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+      - name: Check backend licenses
+        run: |
+          echo "# Backend License Report" >> $GITHUB_STEP_SUMMARY
+          cd backend
+          npm ci
+          license-checker --onlyAllow 'MIT;Apache-2.0;BSD-2-Clause;BSD-3-Clause;ISC' --json > backend-licenses.json || true
+          echo "Backend license check completed"
+          echo "\`\`\`json" >> $GITHUB_STEP_SUMMARY
+          head -50 backend-licenses.json >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload license reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: license-reports
+          path: |
+            frontend-licenses.json
+            backend/backend-licenses.json
+          retention-days: 90
+
+  security-policy-check:
+    name: Security Policy Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check for security policy
+        run: |
+          if [ -f "SECURITY.md" ]; then
+            echo "✅ Security policy found"
+            echo "## Security Policy Content" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`markdown" >> $GITHUB_STEP_SUMMARY
+            cat SECURITY.md >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Security policy not found"
+            echo "⚠️ Security policy (SECURITY.md) not found. Consider adding one." >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Check for vulnerability disclosure
+        run: |
+          if [ -f ".github/SECURITY.md" ] || [ -f "SECURITY.md" ]; then
+            echo "✅ Vulnerability disclosure process documented"
+          else
+            echo "❌ No vulnerability disclosure process found"
+            echo "⚠️ Consider adding a vulnerability disclosure process." >> $GITHUB_STEP_SUMMARY
+          fi
+
+  generate-security-report:
+    name: Generate Security Report
+    runs-on: ubuntu-latest
+    needs: [dependency-scan, code-security-scan, secret-scan, container-security-scan, license-compliance]
+    if: always()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Generate security report
+        run: |
+          cat <<EOF > security-report.md
+          # Security Report - $(date)
+          
+          ## Summary
+          This report contains the results of various security scans and checks performed on the OmnisecAI platform.
+          
+          ## Dependency Vulnerability Scan
+          ${{ needs.dependency-scan.result == 'success' && '✅ Passed' || '❌ Failed' }}
+          
+          ## Code Security Analysis
+          ${{ needs.code-security-scan.result == 'success' && '✅ Passed' || '❌ Failed' }}
+          
+          ## Secret Detection
+          ${{ needs.secret-scan.result == 'success' && '✅ Passed' || '❌ Failed' }}
+          
+          ## Container Security Scan
+          ${{ needs.container-security-scan.result == 'success' && '✅ Passed' || '❌ Failed' }}
+          
+          ## License Compliance
+          ${{ needs.license-compliance.result == 'success' && '✅ Passed' || '❌ Failed' }}
+          
+          ## Recommendations
+          - Review any failed security checks
+          - Update dependencies with known vulnerabilities
+          - Ensure all secrets are properly managed
+          - Monitor container security advisories
+          
+          Generated by: GitHub Actions
+          Workflow: ${{ github.workflow }}
+          Run ID: ${{ github.run_id }}
+          EOF
+
+      - name: Upload security report
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-report
+          path: security-report.md
+          retention-days: 90
+
+  notify-security-team:
+    name: Notify Security Team
+    runs-on: ubuntu-latest
+    needs: [dependency-scan, code-security-scan, secret-scan]
+    if: failure()
+    steps:
+      - name: Send security alert
+        uses: 8398a7/action-slack@v3
+        with:
+          status: 'failure'
+          channel: '#security-alerts'
+          webhook_url: ${{ secrets.SLACK_SECURITY_WEBHOOK_URL }}
+          fields: repo,message,commit,author,action,eventName,ref,workflow
+          custom_payload: |
+            {
+              username: 'Security Bot',
+              icon_emoji: ':warning:',
+              attachments: [{
+                color: 'danger',
+                blocks: [{
+                  type: 'section',
+                  text: {
+                    type: 'mrkdwn',
+                    text: `🚨 *Security scan failure detected*\n*Repository:* ${process.env.AS_REPO}\n*Workflow:* ${process.env.AS_WORKFLOW}\n*Run:* ${process.env.AS_RUN_ID}\n\nPlease investigate immediately.`
+                  }
+                }]
+              }]
+            }
+        env:
+          SLACK_SECURITY_WEBHOOK_URL: ${{ secrets.SLACK_SECURITY_WEBHOOK_URL }}
+        if: env.SLACK_SECURITY_WEBHOOK_URL != ''

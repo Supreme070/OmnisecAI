@@ -31,6 +31,7 @@ import { useAuth } from '@/stores/authStore';
 import OmnisecLogo from '@/components/OmnisecLogo';
 import Sidebar from './Sidebar';
 import Breadcrumbs from './Breadcrumbs';
+import RealTimeNotificationCenter from '@/components/notifications/RealTimeNotificationCenter';
 
 interface DashboardLayoutProps {
   children?: React.ReactNode;
@@ -108,13 +109,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
             {/* Right side */}
             <div className="flex items-center space-x-4">
-              {/* Notifications */}
-              <Button variant="outline" size="icon" className="relative">
-                <Bell className="h-5 w-5" />
-                <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full text-xs text-white flex items-center justify-center">
-                  3
-                </span>
-              </Button>
+              {/* Real-time Notifications */}
+              <RealTimeNotificationCenter />
 
               {/* User menu */}
               <DropdownMenu>

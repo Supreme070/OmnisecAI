@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
@@ -25,6 +25,8 @@ import { Progress } from '@/components/ui/progress';
 import { useDashboardStore } from '@/stores/dashboardStore';
 import { useAuth } from '@/stores/authStore';
 import { useWebSocket } from '@/hooks/useWebSocket';
+import { useRealTimeThreats } from '@/hooks/useRealTimeThreats';
+import { useRealTimeScans } from '@/hooks/useRealTimeScans';
 
 export default function DashboardOverview() {
   const { user } = useAuth();
@@ -49,6 +51,21 @@ export default function DashboardOverview() {
     reconnectInterval: 2000
   });
 
+  // Real-time threat monitoring
+  const {
+    activeThreatCount,
+    recentThreats,
+    isLoading: threatsLoading,
+    stats: threatStats
+  } = useRealTimeThreats();
+
+  // Real-time scan monitoring
+  const {
+    activeScans,
+    completedScans,
+    stats: scanStats
+  } = useRealTimeScans();
+
   useEffect(() => {
     // Fetch initial dashboard data
     refreshDashboard();
@@ -60,7 +77,7 @@ export default function DashboardOverview() {
       }
     }, 30000);
     return () => clearInterval(interval);
-  }, [isConnected]);
+  }, [isConnected, refreshDashboard]);
 
   const quickActions = [
     {
@@ -93,36 +110,50 @@ export default function DashboardOverview() {
     }
   ];
 
-  const recentActivity = [
-    {
-      id: 1,
-      type: 'model_upload',
-      title: 'New model uploaded: bert-classifier-v2',
-      time: '2 minutes ago',
-      status: 'success'
-    },
-    {
-      id: 2,
-      type: 'threat_detected',
-      title: 'Potential adversarial attack detected',
-      time: '15 minutes ago',
-      status: 'warning'
-    },
-    {
-      id: 3,
-      type: 'scan_completed',
-      title: 'Security scan completed for gpt-4-model',
-      time: '1 hour ago',
-      status: 'success'
-    },
-    {
-      id: 4,
-      type: 'user_login',
-      title: 'User sarah@company.com logged in',
-      time: '2 hours ago',
-      status: 'info'
-    }
-  ];
+  // Generate real-time activity feed
+  const recentActivity = React.useMemo(() => {
+    const activities = [];
+    
+    // Add recent threats
+    recentThreats.slice(0, 3).forEach(threat => {
+      activities.push({
+        id: `threat_${threat.id}`,
+        type: 'threat_detected',
+        title: `${threat.threat_type} threat detected`,
+        time: formatTimeAgo(new Date(threat.created_at)),
+        status: threat.severity === 'critical' || threat.severity === 'high' ? 'warning' : 'info',
+        severity: threat.severity
+      });
+    });
+    
+    // Add recent scans
+    [...activeScans.slice(0, 2), ...completedScans.slice(0, 2)].forEach(scan => {
+      activities.push({
+        id: `scan_${scan.id}`,
+        type: scan.status === 'completed' ? 'scan_completed' : 'scan_running',
+        title: `Security scan ${scan.status} for ${scan.model_name}`,
+        time: formatTimeAgo(new Date(scan.created_at)),
+        status: scan.status === 'completed' ? 'success' : 
+               scan.status === 'failed' ? 'error' : 'info',
+        progress: scan.progress
+      });
+    });
+    
+    // Sort by timestamp and take latest 4
+    return activities
+      .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())
+      .slice(0, 4);
+  }, [recentThreats, activeScans, completedScans]);
+
+  const formatTimeAgo = (date: Date) => {
+    const now = new Date();
+    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
+
+    if (diffInMinutes < 1) return 'Just now';
+    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`;
+    return date.toLocaleDateString();
+  };
 
   return (
     <div className="space-y-6">
@@ -206,12 +237,19 @@ export default function DashboardOverview() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-slate-900 dark:text-white">
-                {isLoadingSecurityMetrics ? '...' : securityMetrics?.threats?.active || 0}
+                {threatsLoading ? '...' : activeThreatCount}
               </div>
               <div className="flex items-center space-x-2 text-xs text-slate-500 dark:text-slate-400 mt-1">
                 <TrendingUp className="h-3 w-3 text-green-500" />
-                <span>{securityMetrics?.threats?.detections_24h || 0} detected today</span>
+                <span>{threatStats.critical + threatStats.high} high-priority today</span>
               </div>
+              {threatStats.critical > 0 && (
+                <div className="mt-2">
+                  <Badge variant="destructive" className="text-xs">
+                    {threatStats.critical} Critical
+                  </Badge>
+                </div>
+              )}
             </CardContent>
           </Card>
         </motion.div>

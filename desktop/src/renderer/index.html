@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' ws: wss: https://api.omnisecai.com https://omnisecai.com;">
+  <title>OmnisecAI Desktop</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+        'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+        sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      background-color: #f5f5f5;
+      overflow: hidden;
+    }
+    
+    #root {
+      height: 100vh;
+      width: 100vw;
+    }
+    
+    .loading {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f8fafc;
+    }
+    
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid #e2e8f0;
+      border-top: 3px solid #3b82f6;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .loading-text {
+      margin-top: 16px;
+      color: #64748b;
+      font-size: 14px;
+    }
+    
+    /* Dark mode support */
+    @media (prefers-color-scheme: dark) {
+      body {
+        background-color: #1f2937;
+        color: #f9fafb;
+      }
+      
+      .loading {
+        background-color: #111827;
+      }
+      
+      .loading-spinner {
+        border-color: #374151;
+        border-top-color: #60a5fa;
+      }
+      
+      .loading-text {
+        color: #9ca3af;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="root">
+    <div class="loading">
+      <div>
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Loading OmnisecAI...</div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // Basic error handling for renderer process
+    window.addEventListener('error', (event) => {
+      console.error('Renderer process error:', event.error);
+      if (window.electronAPI) {
+        window.electronAPI.emit('error-report', {
+          message: event.error.message,
+          stack: event.error.stack,
+          filename: event.filename,
+          lineno: event.lineno,
+          colno: event.colno,
+          timestamp: Date.now(),
+        });
+      }
+    });
+    
+    window.addEventListener('unhandledrejection', (event) => {
+      console.error('Unhandled promise rejection:', event.reason);
+      if (window.electronAPI) {
+        window.electronAPI.emit('error-report', {
+          message: 'Unhandled promise rejection',
+          reason: event.reason,
+          timestamp: Date.now(),
+        });
+      }
+    });
+    
+    // Notify main process when renderer is ready
+    window.addEventListener('DOMContentLoaded', () => {
+      if (window.electronAPI) {
+        window.electronAPI.emit('renderer-ready');
+      }
+    });
+  </script>
+</body>
+</html>
