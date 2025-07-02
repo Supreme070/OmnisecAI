@@ -1,4 +1,344 @@
-# Docker Setup Guide - OmnisecAI Cyber Security Platform
+# 🐳 OmnisecAI Docker Development Guide
+
+This guide provides comprehensive instructions for setting up and running the OmnisecAI platform using Docker.
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Docker Engine 20.10+
+- Docker Compose 2.0+
+- 4GB+ available RAM
+- 10GB+ available disk space
+
+### 1. Initial Setup
+
+```bash
+# Clone the repository (if not already done)
+git clone <repository-url>
+cd OmnisecAI
+
+# Copy environment configuration
+cp .env.example .env
+
+# Make the development script executable
+chmod +x scripts/docker-dev.sh
+
+# Start development environment
+./scripts/docker-dev.sh start-dev
+```
+
+### 2. Access the Platform
+
+Once all services are running, you can access:
+
+- 🌐 **Frontend**: http://localhost:3000
+- 🔧 **Backend API**: http://localhost:8000
+- 📊 **Monitoring**: http://localhost:9000
+- 📧 **MailHog**: http://localhost:8025
+- 🗄️ **Adminer**: http://localhost:8080
+- 🐘 **pgAdmin**: http://localhost:5050
+
+## 📋 Available Commands
+
+### Development Helper Script
+
+The `./scripts/docker-dev.sh` script provides convenient commands:
+
+```bash
+# Start services
+./scripts/docker-dev.sh start          # All services
+./scripts/docker-dev.sh start-core     # Core services only
+./scripts/docker-dev.sh start-dev      # With development tools
+
+# Manage services
+./scripts/docker-dev.sh stop           # Stop all services
+./scripts/docker-dev.sh restart        # Restart services
+./scripts/docker-dev.sh status         # Show service status
+
+# Development tasks
+./scripts/docker-dev.sh logs backend   # Show service logs
+./scripts/docker-dev.sh shell backend  # Access container shell
+./scripts/docker-dev.sh migrate        # Run database migrations
+./scripts/docker-dev.sh seed           # Seed test data
+
+# Maintenance
+./scripts/docker-dev.sh cleanup        # Clean Docker resources
+./scripts/docker-dev.sh update         # Update dependencies
+./scripts/docker-dev.sh reset-db       # Reset database (⚠️ destroys data)
+```
+
+### Direct Docker Compose Commands
+
+```bash
+# Start all services
+docker-compose up -d
+
+# Start with development tools
+docker-compose --profile dev up -d
+
+# View logs
+docker-compose logs -f [service-name]
+
+# Stop services
+docker-compose down
+
+# Rebuild containers
+docker-compose up -d --build
+```
+
+## 🏗️ Architecture Overview
+
+### Services
+
+| Service | Port | Description |
+|---------|------|-------------|
+| **frontend** | 3000 | React/Vite application |
+| **backend** | 8000 | Node.js/Express API server |
+| **postgres** | 5432 | PostgreSQL database |
+| **mongodb** | 27017 | MongoDB for logs |
+| **valkey** | 6379 | Redis-compatible cache |
+| **monitoring** | 9000 | Python monitoring service |
+| **mailhog** | 8025 | Email testing (dev only) |
+| **adminer** | 8080 | Database admin UI (dev only) |
+| **pgadmin** | 5050 | PostgreSQL admin (dev only) |
+| **nginx** | 80/443 | Reverse proxy (optional) |
+
+### Data Persistence
+
+Docker volumes are used for data persistence:
+
+- `postgres_data`: PostgreSQL database files
+- `mongodb_data`: MongoDB database files
+- `valkey_data`: Redis/Valkey data
+- `pgadmin_data`: pgAdmin configuration
+
+## ⚙️ Configuration
+
+### Environment Variables
+
+Key environment variables in `.env`:
+
+```bash
+# Database
+POSTGRES_PASSWORD=omnisecai_secure_2024
+MONGO_PASSWORD=omnisecai_mongo_2024
+
+# Authentication
+JWT_SECRET=your-jwt-secret-256-bit
+JWT_REFRESH_SECRET=your-refresh-secret-256-bit
+
+# API Configuration
+API_RATE_LIMIT=100
+CORS_ORIGIN=http://localhost:3000
+
+# Email (development)
+EMAIL_HOST=mailhog
+EMAIL_PORT=1025
+```
+
+### Service Profiles
+
+Docker Compose profiles control which services run:
+
+- **default**: Core services (postgres, mongodb, valkey, backend, frontend, monitoring)
+- **dev**: Adds development tools (mailhog, adminer, pgadmin)
+- **nginx**: Includes nginx reverse proxy
+
+## 🛠️ Development Workflow
+
+### 1. Code Changes
+
+- **Frontend**: Hot reload enabled, changes reflect immediately
+- **Backend**: Nodemon watches for changes and restarts
+- **Database**: Schema changes require migrations
+
+### 2. Database Management
+
+```bash
+# Access PostgreSQL via Adminer
+# URL: http://localhost:8080
+# Server: postgres
+# Username: admin
+# Password: omnisecai_secure_2024
+# Database: omnisecai_security
+
+# Access via pgAdmin
+# URL: http://localhost:5050
+# Email: admin@omnisecai.com
+# Password: admin
+```
+
+### 3. Email Testing
+
+```bash
+# MailHog captures all outgoing emails
+# Web UI: http://localhost:8025
+# SMTP: localhost:1025
+```
+
+### 4. Debugging
+
+```bash
+# View real-time logs
+./scripts/docker-dev.sh logs backend
+
+# Access container shell
+./scripts/docker-dev.sh shell backend
+
+# Check service health
+docker-compose ps
+```
+
+## 🚀 Production Deployment
+
+### Production Override
+
+For production deployment:
+
+```bash
+# Use production compose file
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+
+# Or build for production
+docker-compose -f docker-compose.prod.yml up -d --build
+```
+
+### Key Production Changes
+
+- **Multi-stage builds**: Optimized container sizes
+- **No dev dependencies**: Minimal production images
+- **Security hardening**: Non-root users, minimal attack surface
+- **Resource limits**: CPU and memory constraints
+- **Logging**: Structured logging with rotation
+- **Health checks**: Comprehensive service monitoring
+
+### Environment Configuration
+
+Update `.env` for production:
+
+```bash
+NODE_ENV=production
+LOG_LEVEL=warn
+CORS_ORIGIN=https://your-domain.com
+EMAIL_HOST=your-smtp-server.com
+```
+
+## 🔧 Troubleshooting
+
+### Common Issues
+
+#### 1. Port Conflicts
+```bash
+# Check for conflicting services
+sudo lsof -i :3000
+sudo lsof -i :8000
+
+# Stop conflicting services or change ports in docker-compose.yml
+```
+
+#### 2. Permission Issues
+```bash
+# Fix file permissions
+sudo chown -R $USER:$USER .
+
+# Rebuild containers
+docker-compose down
+docker-compose up -d --build
+```
+
+#### 3. Database Connection Issues
+```bash
+# Check database health
+docker-compose exec postgres pg_isready -U admin -d omnisecai_security
+
+# View database logs
+docker-compose logs postgres
+```
+
+#### 4. Out of Disk Space
+```bash
+# Clean up Docker resources
+./scripts/docker-dev.sh cleanup
+
+# Or manually
+docker system prune -a
+docker volume prune
+```
+
+#### 5. Container Build Failures
+```bash
+# Clear build cache
+docker builder prune
+
+# Rebuild without cache
+docker-compose build --no-cache
+```
+
+### Health Checks
+
+All services include health checks. Monitor with:
+
+```bash
+# Check all service health
+docker-compose ps
+
+# Detailed health status
+docker inspect $(docker-compose ps -q) | grep -A 5 Health
+```
+
+### Performance Monitoring
+
+```bash
+# Container resource usage
+docker stats
+
+# Service-specific metrics
+docker-compose exec monitoring curl localhost:9000/metrics
+```
+
+## 📚 Additional Resources
+
+### Development Tools
+
+- **Hot Reload**: Both frontend and backend support hot reload
+- **TypeScript**: Full TypeScript support with watch mode
+- **Linting**: ESLint runs in development containers
+- **Testing**: Run tests with `./scripts/docker-dev.sh test`
+
+### Database Tools
+
+- **Migrations**: Automated schema migrations
+- **Seeding**: Test data seeding scripts
+- **Backups**: Database backup/restore procedures
+- **Monitoring**: Query performance monitoring
+
+### Security
+
+- **Non-root containers**: All services run as non-root users
+- **Network isolation**: Services communicate via Docker network
+- **Secret management**: Environment variables for sensitive data
+- **Security scanning**: Container vulnerability scanning
+
+## 🆘 Getting Help
+
+If you encounter issues:
+
+1. Check the logs: `./scripts/docker-dev.sh logs [service]`
+2. Verify configuration: `docker-compose config`
+3. Check health status: `docker-compose ps`
+4. Review this documentation
+5. Create an issue with logs and configuration details
+
+## 📝 Next Steps
+
+After setting up Docker:
+
+1. ✅ **Backend Development**: Start with W3-1 (Node.js/Express setup)
+2. ✅ **Database Schema**: Implement W3-2 (PostgreSQL schema)
+3. ✅ **Authentication**: Build W3-3 (JWT authentication)
+4. ✅ **API Integration**: Connect frontend W3-16
+
+Happy coding! 🚀
 
 ## Overview
 This guide provides step-by-step instructions for setting up the complete Docker development environment for the OmnisecAI Cyber Security Platform.

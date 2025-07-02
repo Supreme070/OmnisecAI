@@ -13,7 +13,9 @@ import {
   TrendingUp,
   ArrowRight,
   RefreshCw,
-  Upload
+  Upload,
+  Wifi,
+  WifiOff
 } from 'lucide-react';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,6 +24,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useDashboardStore } from '@/stores/dashboardStore';
 import { useAuth } from '@/stores/authStore';
+import { useWebSocket } from '@/hooks/useWebSocket';
 
 export default function DashboardOverview() {
   const { user } = useAuth();
@@ -34,14 +37,30 @@ export default function DashboardOverview() {
     lastRefresh
   } = useDashboardStore();
 
+  // Initialize WebSocket connection for real-time updates
+  const { 
+    isConnected, 
+    connectionStatus, 
+    isConnecting,
+    hasError 
+  } = useWebSocket({
+    autoConnect: true,
+    reconnectAttempts: 5,
+    reconnectInterval: 2000
+  });
+
   useEffect(() => {
     // Fetch initial dashboard data
     refreshDashboard();
     
-    // Set up auto-refresh every 30 seconds
-    const interval = setInterval(refreshDashboard, 30000);
+    // Set up auto-refresh every 30 seconds (fallback for when WebSocket is not connected)
+    const interval = setInterval(() => {
+      if (!isConnected) {
+        refreshDashboard();
+      }
+    }, 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isConnected]);
 
   const quickActions = [
     {
@@ -119,6 +138,39 @@ export default function DashboardOverview() {
         </div>
         
         <div className="flex items-center space-x-4">
+          {/* Real-time connection status */}
+          <div className="flex items-center space-x-2">
+            {isConnected ? (
+              <>
+                <Wifi className="h-4 w-4 text-green-500" />
+                <Badge variant="default" className="bg-green-500">
+                  Live
+                </Badge>
+              </>
+            ) : isConnecting ? (
+              <>
+                <Wifi className="h-4 w-4 text-yellow-500 animate-pulse" />
+                <Badge variant="secondary" className="bg-yellow-500">
+                  Connecting
+                </Badge>
+              </>
+            ) : hasError ? (
+              <>
+                <WifiOff className="h-4 w-4 text-red-500" />
+                <Badge variant="destructive">
+                  Offline
+                </Badge>
+              </>
+            ) : (
+              <>
+                <WifiOff className="h-4 w-4 text-slate-400" />
+                <Badge variant="secondary">
+                  Disconnected
+                </Badge>
+              </>
+            )}
+          </div>
+          
           <div className="text-right text-sm text-slate-500 dark:text-slate-400">
             {lastRefresh && (
               <p>Last updated: {lastRefresh.toLocaleTimeString()}</p>
