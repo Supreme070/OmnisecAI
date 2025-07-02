@@ -9,7 +9,8 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "lint": "eslint src/**/*.js",
-    "lint:fix": "eslint src/**/*.js --fix"
+    "lint:fix": "eslint src/**/*.js --fix",
+    "create-user": "node scripts/create-user.js"
   },
   "dependencies": {
     "express": "^4.18.2",
