@@ -197,6 +197,123 @@ app.post('/api/v1/auth/login', (req, res) => {
   }
 });
 
+// Get current user endpoint (for token validation)
+app.get('/auth/me', (req, res) => {
+  const authHeader = req.headers.authorization;
+  const token = authHeader && authHeader.split(' ')[1];
+  
+  if (!token) {
+    return res.status(401).json({
+      success: false,
+      error: 'No token provided'
+    });
+  }
+  
+  // Simple token validation - in real app would verify JWT
+  if (token === 'dummy-jwt-token-admin') {
+    res.json({
+      success: true,
+      data: {
+        user: {
+          id: 'admin-user-id',
+          email: 'admin@omnisecai.com',
+          firstName: 'Admin',
+          lastName: 'User',
+          role: 'admin',
+          organizationId: 'org-1',
+          mfaEnabled: false,
+          emailVerified: true,
+          isActive: true,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }
+      }
+    });
+  } else if (token === 'dummy-jwt-token-kola') {
+    res.json({
+      success: true,
+      data: {
+        user: {
+          id: 'kola-user-id',
+          email: 'kola@omnisecai.com',
+          firstName: 'Kola',
+          lastName: 'User',
+          role: 'admin',
+          organizationId: 'org-1',
+          mfaEnabled: false,
+          emailVerified: true,
+          isActive: true,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }
+      }
+    });
+  } else {
+    res.status(401).json({
+      success: false,
+      error: 'Invalid token'
+    });
+  }
+});
+
+app.get('/api/v1/auth/me', (req, res) => {
+  const authHeader = req.headers.authorization;
+  const token = authHeader && authHeader.split(' ')[1];
+  
+  if (!token) {
+    return res.status(401).json({
+      success: false,
+      error: 'No token provided'
+    });
+  }
+  
+  // Simple token validation - in real app would verify JWT
+  if (token === 'dummy-jwt-token-admin') {
+    res.json({
+      success: true,
+      data: {
+        user: {
+          id: 'admin-user-id',
+          email: 'admin@omnisecai.com',
+          firstName: 'Admin',
+          lastName: 'User',
+          role: 'admin',
+          organizationId: 'org-1',
+          mfaEnabled: false,
+          emailVerified: true,
+          isActive: true,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }
+      }
+    });
+  } else if (token === 'dummy-jwt-token-kola') {
+    res.json({
+      success: true,
+      data: {
+        user: {
+          id: 'kola-user-id',
+          email: 'kola@omnisecai.com',
+          firstName: 'Kola',
+          lastName: 'User',
+          role: 'admin',
+          organizationId: 'org-1',
+          mfaEnabled: false,
+          emailVerified: true,
+          isActive: true,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }
+      }
+    });
+  } else {
+    res.status(401).json({
+      success: false,
+      error: 'Invalid token'
+    });
+  }
+});
+
 // Catch all routes
 app.get('*', (req, res) => {
   res.status(404).json({
@@ -206,7 +323,8 @@ app.get('*', (req, res) => {
       'GET /health',
       'GET /api/v1',
       'POST /api/v1/auth/register',
-      'POST /api/v1/auth/login'
+      'POST /api/v1/auth/login',
+      'GET /api/v1/auth/me'
     ]
   });
 });
