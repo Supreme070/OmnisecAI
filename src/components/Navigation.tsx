@@ -1,14 +1,17 @@
 
 import { useState, useEffect } from "react";
-import { Menu } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Menu, User } from "lucide-react";
 import { Button } from "./ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
 import ThemeToggle from "./ThemeToggle";
 import OmnisecLogo from "./OmnisecLogo";
+import { useAuth } from "@/stores/authStore";
 
 const Navigation = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { isAuthenticated, user } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -78,13 +81,27 @@ const Navigation = () => {
               </a>
             ))}
             <ThemeToggle />
-            <Button 
-              onClick={() => scrollToSection('cta')}
-              size="sm"
-              className="button-gradient"
-            >
-              Get Started
-            </Button>
+            {isAuthenticated ? (
+              <Link to="/dashboard">
+                <Button size="sm" className="button-gradient">
+                  <User className="h-4 w-4 mr-2" />
+                  Dashboard
+                </Button>
+              </Link>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Link to="/login">
+                  <Button variant="outline" size="sm">
+                    Sign In
+                  </Button>
+                </Link>
+                <Link to="/register">
+                  <Button size="sm" className="button-gradient">
+                    Get Started
+                  </Button>
+                </Link>
+              </div>
+            )}
           </div>
 
           {/* Mobile Navigation */}
@@ -114,15 +131,37 @@ const Navigation = () => {
                       {item.name}
                     </a>
                   ))}
-                  <Button 
-                    onClick={() => {
-                      setIsMobileMenuOpen(false);
-                      scrollToSection('cta');
-                    }}
-                    className="button-gradient mt-4"
-                  >
-                    Get Started
-                  </Button>
+                  {isAuthenticated ? (
+                    <Link to="/dashboard">
+                      <Button 
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="button-gradient mt-4 w-full"
+                      >
+                        <User className="h-4 w-4 mr-2" />
+                        Dashboard
+                      </Button>
+                    </Link>
+                  ) : (
+                    <div className="flex flex-col gap-2 mt-4">
+                      <Link to="/login">
+                        <Button 
+                          variant="outline" 
+                          onClick={() => setIsMobileMenuOpen(false)}
+                          className="w-full"
+                        >
+                          Sign In
+                        </Button>
+                      </Link>
+                      <Link to="/register">
+                        <Button 
+                          onClick={() => setIsMobileMenuOpen(false)}
+                          className="button-gradient w-full"
+                        >
+                          Get Started
+                        </Button>
+                      </Link>
+                    </div>
+                  )}
                 </div>
               </SheetContent>
             </Sheet>
