@@ -7,6 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "build:dev": "vite build --mode development",
+    "build:docker": "rm -rf node_modules/.vite && npm install --prefer-offline --no-audit && npx vite build",
+    "clean:deps": "rm -rf node_modules/.vite && npm install --prefer-offline --no-audit",
     "lint": "eslint .",
     "preview": "vite preview"
   },

@@ -1,5 +1,3 @@
-version: '3.8'
-
 networks:
   omnisecai-network:
     driver: bridge
@@ -74,6 +72,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+      target: development
     container_name: omnisecai-backend
     restart: unless-stopped
     environment:
@@ -102,7 +101,7 @@ services:
         condition: service_healthy
     networks:
       - omnisecai-network
-    command: npm run dev
+    # Uses default CMD from Dockerfile
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
@@ -113,6 +112,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.frontend
+      target: development
     container_name: omnisecai-frontend
     restart: unless-stopped
     environment:
@@ -120,7 +120,7 @@ services:
       VITE_WS_URL: ws://localhost:8000
       NODE_ENV: development
     ports:
-      - "3000:3000"
+      - "3000:8080"
     volumes:
       - ./src:/app/src
       - ./public:/app/public
@@ -131,7 +131,7 @@ services:
       - omnisecai-network
     command: npm run dev -- --host 0.0.0.0
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
       interval: 30s
       timeout: 10s
       retries: 3

@@ -49,8 +49,8 @@ CMD ["dumb-init", "npm", "run", "dev", "--", "--host", "0.0.0.0"]
 FROM base AS build
 ENV NODE_ENV=production
 
-# Install dependencies
-RUN npm ci
+# Install dependencies with specific handling for ARM64
+RUN npm ci --prefer-offline --no-audit
 
 # Copy source code
 COPY . .
@@ -69,8 +69,13 @@ ENV VITE_APP_NAME=$VITE_APP_NAME
 ENV VITE_APP_VERSION=$VITE_APP_VERSION
 ENV VITE_ENVIRONMENT=$VITE_ENVIRONMENT
 
-# Build the application
-RUN npm run build
+# Clean and rebuild node_modules to fix ARM64 issues
+RUN rm -rf node_modules/.vite && \
+    rm -rf node_modules/@rollup && \
+    npm install --prefer-offline --no-audit
+
+# Build the application using npx to ensure vite is found
+RUN npx vite build
 
 # Production stage with nginx
 FROM nginx:alpine AS production

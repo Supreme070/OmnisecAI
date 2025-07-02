@@ -20,17 +20,18 @@ FROM base AS development
 ENV NODE_ENV=development
 
 # Install all dependencies (including dev dependencies)
-RUN npm ci
+RUN npm ci --include=dev
+
+# Copy source code
+COPY . .
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001
 
-# Copy source code
-COPY . .
-
-# Change ownership
-RUN chown -R nodejs:nodejs /app
+# Create necessary directories and set permissions
+RUN mkdir -p logs uploads && \
+    chown -R nodejs:nodejs /app
 
 # Switch to non-root user
 USER nodejs
@@ -42,8 +43,8 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:8000/health || exit 1
 
-# Start development server
-CMD ["dumb-init", "npm", "run", "dev"]
+# Start simple JavaScript server for quick testing
+CMD ["dumb-init", "node", "src/server-simple.js"]
 
 # Production build stage
 FROM base AS build
