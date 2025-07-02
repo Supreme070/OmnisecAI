@@ -1,0 +1,190 @@
+version: '3.8'
+
+networks:
+  omnisecai-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  mongodb_data:
+  valkey_data:
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: omnisecai-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: omnisecai_security
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-omnisecai_secure_2024}
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./config/database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - omnisecai-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d omnisecai_security"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  mongodb:
+    image: mongo:7.0
+    container_name: omnisecai-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-omnisecai_mongo_2024}
+      MONGO_INITDB_DATABASE: omnisecai_logs
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - ./config/database/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js
+    networks:
+      - omnisecai-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  valkey:
+    image: valkey/valkey:7.2-alpine
+    container_name: omnisecai-valkey
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - valkey_data:/data
+    networks:
+      - omnisecai-network
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: omnisecai-backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      PORT: 8000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: omnisecai_security
+      DB_USER: admin
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-omnisecai_secure_2024}
+      MONGO_URL: mongodb://admin:${MONGO_PASSWORD:-omnisecai_mongo_2024}@mongodb:27017/omnisecai_logs?authSource=admin
+      VALKEY_URL: valkey://valkey:6379
+      JWT_SECRET: ${JWT_SECRET:-omnisecai_jwt_secret_change_in_production}
+      API_VERSION: v1
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+    networks:
+      - omnisecai-network
+    command: npm run dev
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: omnisecai-frontend
+    restart: unless-stopped
+    environment:
+      VITE_API_URL: http://localhost:8000/api/v1
+      VITE_WS_URL: ws://localhost:8000
+      NODE_ENV: development
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./src:/app/src
+      - ./public:/app/public
+      - /app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - omnisecai-network
+    command: npm run dev -- --host 0.0.0.0
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  monitoring:
+    build:
+      context: ./monitoring
+      dockerfile: Dockerfile
+    container_name: omnisecai-monitoring
+    restart: unless-stopped
+    environment:
+      PYTHONPATH: /app
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: omnisecai_security
+      DB_USER: admin
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-omnisecai_secure_2024}
+      MONGO_URL: mongodb://admin:${MONGO_PASSWORD:-omnisecai_mongo_2024}@mongodb:27017/omnisecai_logs?authSource=admin
+      VALKEY_URL: valkey://valkey:6379
+    ports:
+      - "9000:9000"
+    volumes:
+      - ./monitoring:/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+    networks:
+      - omnisecai-network
+    command: python -m uvicorn src.main:app --host 0.0.0.0 --port 9000 --reload
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  nginx:
+    image: nginx:alpine
+    container_name: omnisecai-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./infrastructure/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./infrastructure/nginx/ssl:/etc/nginx/ssl
+    depends_on:
+      - frontend
+      - backend
+      - monitoring
+    networks:
+      - omnisecai-network
+    profiles:
+      - nginx
