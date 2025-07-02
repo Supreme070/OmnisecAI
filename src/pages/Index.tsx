@@ -76,7 +76,7 @@ const Index = () => {
             >
               <Shield className="w-4 h-4 text-primary" />
             </motion.div>
-            <span className="font-mono">DONE_AI_SECURITY.exe</span>
+            <span className="font-mono">OMNISECAI_SECURITY.exe</span>
             <div className="flex gap-1">
               <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               <div className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse delay-200" />
@@ -190,7 +190,7 @@ const Index = () => {
                     <div>
                       <h3 className="font-bold text-foreground text-base font-mono">
                         <span className="bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
-                          DONE
+                          OmnisecAI
                         </span>{" "}
                         Security Platform
                       </h3>
@@ -456,7 +456,7 @@ const Index = () => {
               >
                 <Shield className="w-4 h-4 text-primary" />
               </motion.div>
-              <span className="font-mono">SECURITY_STATUS: READY_TO_DEPLOY</span>
+              <span className="font-mono">OMNISECAI_STATUS: READY_TO_DEPLOY</span>
               <div className="flex gap-1">
                 <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                 <div className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse delay-200" />
@@ -508,7 +508,7 @@ const Index = () => {
           >
             Join leading organizations who trust{" "}
             <span className="text-foreground font-bold font-mono bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
-              DONE
+              OmnisecAI
             </span>{" "}
             to protect their AI models, LLMs, and cloud infrastructure with enterprise-grade security.
           </motion.p>

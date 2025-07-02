@@ -4,7 +4,7 @@ import { Menu } from "lucide-react";
 import { Button } from "./ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
 import ThemeToggle from "./ThemeToggle";
-import { DoneLogo } from "./DoneLogo";
+import OmnisecLogo from "./OmnisecLogo";
 
 const Navigation = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -58,7 +58,7 @@ const Navigation = () => {
     >
       <div className="mx-auto h-full px-6">
         <nav className="flex items-center justify-between h-full">
-          <DoneLogo size="sm" animated={true} />
+          <OmnisecLogo size="sm" animate={true} />
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-6">

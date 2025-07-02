@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OmnisecAI Cyber Application - Web App Mockup</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #e2e8f0;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* Top Navigation */
+        .top-nav {
+            height: 64px;
+            background: linear-gradient(90deg, rgba(6, 182, 212, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            z-index: 1000;
+        }
+
+        .logo-area {
+            width: 200px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(45deg, #06b6d4, #a855f7);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            font-size: 14px;
+        }
+
+        .global-search {
+            flex: 1;
+            max-width: 600px;
+            margin: 0 24px;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            height: 40px;
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 12px;
+            padding: 0 16px 0 48px;
+            color: #e2e8f0;
+            font-size: 14px;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #64748b;
+        }
+
+        .top-nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .nav-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .nav-icon:hover {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            width: 16px;
+            height: 16px;
+            background: #ef4444;
+            border-radius: 50%;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        /* Main Content */
+        .main-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(16px);
+            border-right: 1px solid rgba(148, 163, 184, 0.1);
+            overflow-y: auto;
+            transition: width 0.3s ease;
+        }
+
+        .sidebar-section {
+            margin-bottom: 8px;
+        }
+
+        .sidebar-header {
+            padding: 16px 20px 8px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+            position: relative;
+        }
+
+        .nav-item:hover {
+            background: rgba(59, 130, 246, 0.1);
+            border-left-color: #3b82f6;
+            transform: translateX(2px);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(90deg, rgba(59, 130, 246, 0.2) 0%, rgba(59, 130, 246, 0.05) 100%);
+            border-left-color: #3b82f6;
+            color: #3b82f6;
+        }
+
+        .nav-item-icon {
+            width: 20px;
+            margin-right: 12px;
+            font-size: 18px;
+        }
+
+        .nav-item-text {
+            flex: 1;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .nav-item-arrow {
+            color: #64748b;
+            font-size: 12px;
+            transition: transform 0.2s ease;
+        }
+
+        .nav-item.expanded .nav-item-arrow {
+            transform: rotate(90deg);
+        }
+
+        .sub-nav {
+            background: rgba(0, 0, 0, 0.2);
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .sub-nav.expanded {
+            max-height: 500px;
+        }
+
+        .sub-nav-item {
+            padding: 8px 20px 8px 52px;
+            font-size: 13px;
+            color: #94a3b8;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .sub-nav-item:hover {
+            background: rgba(59, 130, 246, 0.1);
+            color: #e2e8f0;
+            padding-left: 56px;
+        }
+
+        /* Content Area */
+        .content-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .breadcrumb {
+            padding: 16px 24px;
+            font-size: 14px;
+            color: #64748b;
+            background: rgba(30, 41, 59, 0.3);
+            border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+        }
+
+        .breadcrumb-link {
+            color: #3b82f6;
+            text-decoration: none;
+        }
+
+        .page-header {
+            padding: 24px;
+            background: rgba(30, 41, 59, 0.2);
+            border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #06b6d4, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .page-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(30, 41, 59, 0.8);
+            color: #e2e8f0;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+        }
+
+        /* Dashboard Grid */
+        .dashboard-content {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .widget {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+            backdrop-filter: blur(8px);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .widget:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+
+        .widget-header {
+            display: flex;
+            align-items: center;
+            justify-content: between;
+            margin-bottom: 16px;
+        }
+
+        .widget-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #e2e8f0;
+        }
+
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-left: auto;
+        }
+
+        .status-green {
+            background: #10b981;
+            box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+            animation: pulse 2s infinite;
+        }
+
+        .status-red {
+            background: #ef4444;
+            box-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
+            animation: pulse 2s infinite;
+        }
+
+        .status-yellow {
+            background: #f59e0b;
+            box-shadow: 0 0 8px rgba(245, 158, 11, 0.6);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .metric-value {
+            font-size: 32px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #06b6d4, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .metric-label {
+            font-size: 14px;
+            color: #94a3b8;
+            margin-bottom: 12px;
+        }
+
+        .metric-change {
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+
+        .metric-up {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+
+        .metric-down {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        /* Status Bar */
+        .status-bar {
+            height: 32px;
+            background: rgba(15, 23, 42, 0.9);
+            border-top: 1px solid rgba(148, 163, 184, 0.1);
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            font-size: 12px;
+            color: #64748b;
+            gap: 24px;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        .large-widget {
+            grid-column: span 2;
+        }
+
+        .chart-placeholder {
+            height: 200px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(168, 85, 247, 0.1));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            font-size: 14px;
+            margin-top: 16px;
+        }
+
+        .threat-list {
+            margin-top: 16px;
+        }
+
+        .threat-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+        }
+
+        .threat-severity {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 12px;
+        }
+
+        .threat-severity.critical {
+            background: #ef4444;
+            box-shadow: 0 0 6px rgba(239, 68, 68, 0.6);
+        }
+
+        .threat-severity.high {
+            background: #f59e0b;
+            box-shadow: 0 0 6px rgba(245, 158, 11, 0.6);
+        }
+
+        .threat-severity.medium {
+            background: #3b82f6;
+            box-shadow: 0 0 6px rgba(59, 130, 246, 0.6);
+        }
+
+        .threat-text {
+            flex: 1;
+            font-size: 13px;
+        }
+
+        .threat-time {
+            font-size: 11px;
+            color: #64748b;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .dashboard-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 64px;
+            }
+            
+            .nav-item-text,
+            .nav-item-arrow {
+                display: none;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Top Navigation -->
+        <header class="top-nav">
+            <div class="logo-area">
+                <div class="logo">O</div>
+                <span style="font-weight: 600; color: #e2e8f0;">OmnisecAI Security</span>
+            </div>
+            
+            <div class="global-search">
+                <span class="search-icon">🔍</span>
+                <input type="text" class="search-input" placeholder="Search models, threats, alerts..." />
+            </div>
+            
+            <div class="top-nav-actions">
+                <div class="nav-icon">
+                    <span>🔔</span>
+                    <span class="notification-badge">3</span>
+                </div>
+                <div class="nav-icon">
+                    <span>👤</span>
+                </div>
+                <div class="nav-icon">
+                    <span>⚙️</span>
+                </div>
+                <div class="nav-icon">
+                    <span>🌙</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <!-- Sidebar Navigation -->
+            <nav class="sidebar">
+                <div class="sidebar-section">
+                    <div class="nav-item active">
+                        <span class="nav-item-icon">🏠</span>
+                        <span class="nav-item-text">Dashboard</span>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <div class="nav-item">
+                        <span class="nav-item-icon">🛡️</span>
+                        <span class="nav-item-text">AI Security</span>
+                        <span class="nav-item-arrow">›</span>
+                    </div>
+                    <div class="sub-nav">
+                        <div class="sub-nav-item">Model Protection</div>
+                        <div class="sub-nav-item">Runtime Protection</div>
+                        <div class="sub-nav-item">Data Pipeline Security</div>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <div class="nav-item">
+                        <span class="nav-item-icon">🧠</span>
+                        <span class="nav-item-text">LLM Security</span>
+                        <span class="nav-item-arrow">›</span>
+                    </div>
+                    <div class="sub-nav">
+                        <div class="sub-nav-item">LLM Testing Suite</div>
+                        <div class="sub-nav-item">LLM Monitoring</div>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <div class="nav-item">
+                        <span class="nav-item-icon">👁️</span>
+                        <span class="nav-item-text">Monitoring & Detection</span>
+                        <span class="nav-item-arrow">›</span>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <div class="nav-item">
+                        <span class="nav-item-icon">🔐</span>
+                        <span class="nav-item-text">Access & Identity</span>
+                        <span class="nav-item-arrow">›</span>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <div class="nav-item">
+                        <span class="nav-item-icon">⚡</span>
+                        <span class="nav-item-text">DevSecOps</span>
+                        <span class="nav-item-arrow">›</span>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <div class="nav-item">
+                        <span class="nav-item-icon">📊</span>
+                        <span class="nav-item-text">Compliance & Governance</span>
+                        <span class="nav-item-arrow">›</span>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <div class="nav-item">
+                        <span class="nav-item-icon">🚨</span>
+                        <span class="nav-item-text">Incident Response</span>
+                        <span class="nav-item-arrow">›</span>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <div class="nav-item">
+                        <span class="nav-item-icon">🔍</span>
+                        <span class="nav-item-text">Threat Modeling</span>
+                        <span class="nav-item-arrow">›</span>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <div class="nav-item">
+                        <span class="nav-item-icon">☁️</span>
+                        <span class="nav-item-text">Cloud Security</span>
+                        <span class="nav-item-arrow">›</span>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <div class="nav-item">
+                        <span class="nav-item-icon">⚙️</span>
+                        <span class="nav-item-text">Administration</span>
+                        <span class="nav-item-arrow">›</span>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Main Content Area -->
+            <main class="content-area">
+                <div class="breadcrumb">
+                    <a href="#" class="breadcrumb-link">Dashboard</a> > Security Overview
+                </div>
+
+                <div class="page-header">
+                    <h1 class="page-title">Security Overview</h1>
+                    <div class="page-actions">
+                        <button class="btn btn-secondary">Export Report</button>
+                        <button class="btn btn-primary">🔍 Run Security Scan</button>
+                    </div>
+                </div>
+
+                <div class="dashboard-content">
+                    <div class="dashboard-grid">
+                        <!-- Security Score Widget -->
+                        <div class="widget">
+                            <div class="widget-header">
+                                <h3 class="widget-title">Security Score</h3>
+                                <div class="status-indicator status-green"></div>
+                            </div>
+                            <div class="metric-value">98.7%</div>
+                            <div class="metric-label">Overall Security Posture</div>
+                            <div class="metric-change metric-up">↗ +2.3% from last week</div>
+                        </div>
+
+                        <!-- Models Protected Widget -->
+                        <div class="widget">
+                            <div class="widget-header">
+                                <h3 class="widget-title">Models Protected</h3>
+                                <div class="status-indicator status-green"></div>
+                            </div>
+                            <div class="metric-value">2,847</div>
+                            <div class="metric-label">AI Models Secured</div>
+                            <div class="metric-change metric-up">↗ +47 this month</div>
+                        </div>
+
+                        <!-- Threats Blocked Widget -->
+                        <div class="widget">
+                            <div class="widget-header">
+                                <h3 class="widget-title">Threats Blocked</h3>
+                                <div class="status-indicator status-red"></div>
+                            </div>
+                            <div class="metric-value">1,234</div>
+                            <div class="metric-label">Threats Detected Today</div>
+                            <div class="metric-change metric-down">↗ +89% increase</div>
+                        </div>
+
+                        <!-- System Uptime Widget -->
+                        <div class="widget">
+                            <div class="widget-header">
+                                <h3 class="widget-title">System Uptime</h3>
+                                <div class="status-indicator status-green"></div>
+                            </div>
+                            <div class="metric-value">99.97%</div>
+                            <div class="metric-label">Last 30 Days</div>
+                            <div class="metric-change metric-up">↗ 0.02% improvement</div>
+                        </div>
+
+                        <!-- Threat Map Widget (Large) -->
+                        <div class="widget large-widget">
+                            <div class="widget-header">
+                                <h3 class="widget-title">🌍 Real-time Threat Map</h3>
+                                <div class="status-indicator status-yellow"></div>
+                            </div>
+                            <div class="chart-placeholder">
+                                🗺️ Interactive Global Threat Visualization
+                                <br><small>Click regions to drill down</small>
+                            </div>
+                        </div>
+
+                        <!-- Recent Alerts Widget (Large) -->
+                        <div class="widget large-widget">
+                            <div class="widget-header">
+                                <h3 class="widget-title">🚨 Recent Security Alerts</h3>
+                                <div class="status-indicator status-red"></div>
+                            </div>
+                            <div class="threat-list">
+                                <div class="threat-item">
+                                    <div class="threat-severity critical"></div>
+                                    <div class="threat-text">
+                                        <strong>Prompt Injection Detected</strong><br>
+                                        LLM Model: GPT-4-Custom-Healthcare
+                                    </div>
+                                    <div class="threat-time">2m ago</div>
+                                </div>
+                                <div class="threat-item">
+                                    <div class="threat-severity high"></div>
+                                    <div class="threat-text">
+                                        <strong>Adversarial Attack Blocked</strong><br>
+                                        Model: Vision-Classification-v2.1
+                                    </div>
+                                    <div class="threat-time">5m ago</div>
+                                </div>
+                                <div class="threat-item">
+                                    <div class="threat-severity medium"></div>
+                                    <div class="threat-text">
+                                        <strong>Unusual API Usage Pattern</strong><br>
+                                        Endpoint: /api/v1/inference
+                                    </div>
+                                    <div class="threat-time">12m ago</div>
+                                </div>
+                                <div class="threat-item">
+                                    <div class="threat-severity critical"></div>
+                                    <div class="threat-text">
+                                        <strong>Data Poisoning Attempt</strong><br>
+                                        Training Pipeline: ML-Pipeline-Production
+                                    </div>
+                                    <div class="threat-time">18m ago</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- Status Bar -->
+        <footer class="status-bar">
+            <div class="status-item">
+                <div class="status-dot status-green"></div>
+                <span>System Healthy</span>
+            </div>
+            <div class="status-item">
+                <div class="status-dot status-red"></div>
+                <span>3 Critical Alerts</span>
+            </div>
+            <div class="status-item">
+                <div class="status-dot status-yellow"></div>
+                <span>5 Warnings</span>
+            </div>
+            <div class="status-item">
+                <span>Last Update: 2s ago</span>
+            </div>
+            <div class="status-item" style="margin-left: auto;">
+                <span>Connected to: AWS us-east-1 • Azure westus2 • GCP us-central1</span>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Add interactivity to navigation
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const subNav = this.nextElementSibling;
+                if (subNav && subNav.classList.contains('sub-nav')) {
+                    this.classList.toggle('expanded');
+                    subNav.classList.toggle('expanded');
+                }
+                
+                // Update active state
+                document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Add interactivity to widgets
+        document.querySelectorAll('.widget').forEach(widget => {
+            widget.addEventListener('click', function() {
+                console.log('Widget clicked:', this.querySelector('.widget-title').textContent);
+            });
+        });
+
+        // Simulate real-time updates
+        setInterval(() => {
+            const timestamp = document.querySelector('.status-bar .status-item:last-child span');
+            const now = new Date();
+            const seconds = Math.floor(Math.random() * 60);
+            timestamp.textContent = `Last Update: ${seconds}s ago`;
+        }, 5000);
+    </script>
+</body>
+</html>

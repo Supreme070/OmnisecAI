@@ -1,7 +1,7 @@
 
-import { Github, Twitter } from "lucide-react";
+import { Github, Twitter, Youtube, Instagram, Facebook, Linkedin } from "lucide-react";
 import { Button } from "./ui/button";
-import { DoneLogo } from "./DoneLogo";
+import OmnisecLogo from "./OmnisecLogo";
 
 const Footer = () => {
   return (
@@ -10,16 +10,28 @@ const Footer = () => {
         <div className="glass glass-hover rounded-xl p-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div className="space-y-4">
-              <DoneLogo size="md" animated={true} />
+              <OmnisecLogo size="md" animate={true} />
               <p className="text-sm text-muted-foreground">
                 Comprehensive AI cybersecurity solution for models, systems, and cloud infrastructure.
               </p>
-              <div className="flex space-x-4">
-                <Button variant="ghost" size="icon">
+              <div className="flex flex-wrap gap-2">
+                <Button variant="ghost" size="icon" className="hover:text-[#1DA1F2] transition-colors">
                   <Twitter className="w-4 h-4" />
                 </Button>
-                <Button variant="ghost" size="icon">
+                <Button variant="ghost" size="icon" className="hover:text-[#0A66C2] transition-colors">
+                  <Linkedin className="w-4 h-4" />
+                </Button>
+                <Button variant="ghost" size="icon" className="hover:text-[#333] dark:hover:text-white transition-colors">
                   <Github className="w-4 h-4" />
+                </Button>
+                <Button variant="ghost" size="icon" className="hover:text-[#FF0000] transition-colors">
+                  <Youtube className="w-4 h-4" />
+                </Button>
+                <Button variant="ghost" size="icon" className="hover:text-[#E4405F] transition-colors">
+                  <Instagram className="w-4 h-4" />
+                </Button>
+                <Button variant="ghost" size="icon" className="hover:text-[#1877F2] transition-colors">
+                  <Facebook className="w-4 h-4" />
                 </Button>
               </div>
             </div>
@@ -90,7 +102,7 @@ const Footer = () => {
 
           <div className="mt-8 pt-8 border-t border-white/10">
             <p className="text-sm text-muted-foreground text-center">
-              © {new Date().getFullYear()} DONE Security. All rights reserved.
+              © {new Date().getFullYear()} OmnisecAI Security. All rights reserved.
             </p>
           </div>
         </div>
