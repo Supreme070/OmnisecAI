@@ -31,7 +31,7 @@ docker-compose --version
 ### 1. Create Complete Project Structure
 ```bash
 # Navigate to project root
-cd /Users/supreme/Desktop/DONE-AI
+cd /Users/supreme/Desktop/OmnisecAI
 
 # Create backend structure
 mkdir -p backend/{src,tests,config}
@@ -60,7 +60,7 @@ mkdir -p config/{database,security,monitoring}
 version: '3.8'
 
 networks:
-  done-ai-network:
+  omnisecai-network:
     driver: bridge
 
 volumes:
@@ -85,9 +85,9 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./config/database/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
-      - done-ai-network
+      - omnisecai-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U admin -d done_ai_security"]
+      test: ["CMD-SHELL", "pg_isready -U admin -d omnisecai_security"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -106,7 +106,7 @@ services:
       - mongodb_data:/data/db
       - ./config/database/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js
     networks:
-      - done-ai-network
+      - omnisecai-network
     healthcheck:
       test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
       interval: 30s
@@ -123,7 +123,7 @@ services:
     volumes:
       - valkey_data:/data
     networks:
-      - done-ai-network
+      - omnisecai-network
     healthcheck:
       test: ["CMD", "valkey-cli", "ping"]
       interval: 30s
@@ -160,7 +160,7 @@ services:
       valkey:
         condition: service_healthy
     networks:
-      - done-ai-network
+      - omnisecai-network
     command: npm run dev
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
@@ -191,7 +191,7 @@ services:
     depends_on:
       - backend
     networks:
-      - done-ai-network
+      - omnisecai-network
     command: npm run dev -- --host 0.0.0.0
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000"]
@@ -225,7 +225,7 @@ services:
       valkey:
         condition: service_healthy
     networks:
-      - done-ai-network
+      - omnisecai-network
     command: python -m uvicorn src.main:app --host 0.0.0.0 --port 9000 --reload
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/health"]
@@ -246,7 +246,7 @@ services:
       - backend
       - monitoring
     networks:
-      - done-ai-network
+      - omnisecai-network
     profiles:
       - nginx
 ```
@@ -925,7 +925,7 @@ echo "🗄️ Running database migrations..."
 docker-compose -f docker-compose.dev.yml exec backend npm run migrate
 
 # Check MongoDB collections
-docker-compose -f docker-compose.dev.yml exec mongodb mongosh done_ai_logs --eval "db.getCollectionNames()"
+docker-compose -f docker-compose.dev.yml exec mongodb mongosh omnisecai_logs --eval "db.getCollectionNames()"
 
 echo "✅ Migrations complete!"
 ```
@@ -970,7 +970,7 @@ case "$1" in
         ;;
     shell-db)
         echo "🐚 Opening database shell..."
-        docker-compose -f docker-compose.dev.yml exec postgres psql -U admin -d done_ai_security
+        docker-compose -f docker-compose.dev.yml exec postgres psql -U admin -d omnisecai_security
         ;;
     reset)
         echo "🗑️ Resetting all data (THIS WILL DELETE ALL DATA)..."
@@ -1004,7 +1004,7 @@ esac
 ### 1. Initial Setup
 ```bash
 # Navigate to project
-cd /Users/supreme/Desktop/DONE-AI
+cd /Users/supreme/Desktop/OmnisecAI
 
 # Make scripts executable
 chmod +x scripts/*.sh

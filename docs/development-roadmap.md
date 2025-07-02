@@ -488,7 +488,7 @@ services:
 #### Development Environment Setup
 ```bash
 # Project structure
-done-ai-security/
+omnisecai-security/
 ├── docker-compose.yml
 ├── docker-compose.dev.yml
 ├── docker-compose.prod.yml

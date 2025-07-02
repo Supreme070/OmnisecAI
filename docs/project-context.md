@@ -125,7 +125,7 @@ Frontend (React) ↔ Backend API (Node.js) ↔ Monitoring (Python) ↔ Databases
 
 ## 🗂️ File Structure
 ```
-/Users/supreme/Desktop/DONE-AI/ (to be renamed to OmnisecAI/)
+/Users/supreme/Desktop/OmnisecAI/
 ├── src/                          # Current React landing page
 ├── docs/                         # All documentation
 │   ├── webapp-design-specification.md
