@@ -138,7 +138,7 @@ const AppContent = () => {
           <Route
             path="/dashboard/compliance/audit"
             element={
-              <ProtectedRoute requiredRole="security_analyst">
+              <ProtectedRoute requiredRole="analyst">
                 <AuditLogs />
               </ProtectedRoute>
             }

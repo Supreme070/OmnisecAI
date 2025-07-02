@@ -9,6 +9,8 @@ import { connectToMongoDB } from '@/config/mongodb';
 import { connectToRedis } from '@/config/redis';
 import { EmailService } from '@/services/EmailService';
 import { WebSocketService } from '@/services/WebSocketService';
+import { ScanWorkerService } from '@/services/ScanWorkerService';
+import { ThreatDetectionService } from '@/services/ThreatDetectionService';
 
 import { 
   corsOptions, 
@@ -78,11 +80,12 @@ app.get('/api/v1', (_req, res) => {
     description: 'Comprehensive AI/ML cybersecurity platform API',
     endpoints: {
       auth: '/api/v1/auth',
-      users: '/api/v1/users',
       models: '/api/v1/models',
-      security: '/api/v1/security',
-      llm: '/api/v1/llm',
-      monitoring: '/api/v1/monitoring'
+      scanning: '/api/v1/scanning',
+      threats: '/api/v1/threats',
+      analytics: '/api/v1/analytics',
+      websocket: '/api/v1/websocket',
+      keys: '/api/v1/keys'
     },
     documentation: '/docs',
     health: '/health',
@@ -99,6 +102,9 @@ import mfaAuthRoutes from '@/routes/mfa-auth';
 import apiKeyRoutes from '@/routes/api-keys';
 import modelRoutes from '@/routes/models';
 import websocketRoutes from '@/routes/websocket';
+import scanningRoutes from '@/routes/scanning';
+import threatRoutes from '@/routes/threats';
+import analyticsRoutes from '@/routes/analytics';
 
 // Mount API routes
 app.use('/api/auth', authRoutes);
@@ -117,6 +123,12 @@ app.use('/api', modelRoutes);
 app.use('/api/v1', modelRoutes);
 app.use('/api', websocketRoutes);
 app.use('/api/v1', websocketRoutes);
+app.use('/api', scanningRoutes);
+app.use('/api/v1', scanningRoutes);
+app.use('/api', threatRoutes);
+app.use('/api/v1', threatRoutes);
+app.use('/api', analyticsRoutes);
+app.use('/api/v1', analyticsRoutes);
 
 // 404 handler
 app.use('*', notFoundHandler);
@@ -155,7 +167,10 @@ async function initializeServices(): Promise<void> {
 function gracefulShutdown(signal: string, server: Server): void {
   logger.info(`Received ${signal}. Starting graceful shutdown...`);
   
-  // Shutdown WebSocket service first
+  // Shutdown services in order
+  ScanWorkerService.stop();
+  logger.info('Scan worker service stopped');
+  
   WebSocketService.shutdown().then(() => {
     logger.info('WebSocket service shutdown completed');
     
@@ -192,6 +207,14 @@ async function startServer(): Promise<void> {
       // Initialize WebSocket service after HTTP server starts
       WebSocketService.initialize(server);
       logger.info(`🔌 WebSocket server initialized`);
+      
+      // Start scan worker service
+      ScanWorkerService.start();
+      logger.info(`🔍 Scan worker service started`);
+      
+      // Start threat detection monitoring
+      ThreatDetectionService.startMonitoring();
+      logger.info(`🛡️ Threat detection monitoring started`);
     });
 
     // Handle server startup errors

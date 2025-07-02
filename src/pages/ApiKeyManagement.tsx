@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Key, 
@@ -34,6 +34,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/contexts/ToastContext';
 import { LoadingSpinner } from '@/components/loading/LoadingSpinner';
+import { apiKeysApi } from '@/lib/api';
 
 interface ApiKey {
   id: string;

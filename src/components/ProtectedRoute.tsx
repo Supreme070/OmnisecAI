@@ -5,7 +5,7 @@ import { Loader2 } from 'lucide-react';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requiredRole?: 'admin' | 'security_analyst' | 'developer' | 'viewer';
+  requiredRole?: 'admin' | 'analyst' | 'user' | 'viewer';
   fallbackPath?: string;
 }
 
@@ -44,8 +44,8 @@ export default function ProtectedRoute({
   if (requiredRole && user) {
     const roleHierarchy = {
       viewer: 0,
-      developer: 1,
-      security_analyst: 2,
+      user: 1,
+      analyst: 2,
       admin: 3,
     };
 

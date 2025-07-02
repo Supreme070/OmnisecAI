@@ -8,13 +8,20 @@ export interface User {
   email: string;
   firstName: string;
   lastName: string;
-  role: 'admin' | 'security_analyst' | 'developer' | 'viewer';
+  username?: string;
+  role: 'admin' | 'analyst' | 'user' | 'viewer';
   organizationId: string;
-  organizationName: string;
-  organizationSlug: string;
+  organizationName?: string;
+  organizationSlug?: string;
   mfaEnabled: boolean;
+  mfaSecret?: string;
+  emailVerified: boolean;
   lastLogin?: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
   settings?: any;
+  permissions?: string[];
 }
 
 interface AuthState {
@@ -59,10 +66,13 @@ export const useAuthStore = create<AuthState>()(
           const response = await authApi.login(credentials);
           
           if (response.success && response.data) {
-            const { token, user } = response.data;
+            const { token, refresh_token, user } = response.data;
             
-            // Store token
+            // Store tokens
             tokenManager.setToken(token);
+            if (refresh_token) {
+              tokenManager.setRefreshToken(refresh_token);
+            }
             
             // Update state
             set({
