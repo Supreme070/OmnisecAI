@@ -1,0 +1,23 @@
+{
+  "brandName": "OmnisecAI",
+  "title": "AI Security Platform - Protect Your AI Models, LLMs & Cloud Infrastructure",
+  "company": {
+    "name": "OmnisecAI",
+    "url": "https://omnisecai.com",
+    "socialLink": {
+      "linkedin": "https://linkedin.com/company/omnisecai",
+      "twitter": "https://twitter.com/omnisecai",
+      "github": "https://github.com/omnisecai",
+      "youtube": "https://youtube.com/@omnisecai",
+      "slack": "https://slack.omnisecai.com",
+      "discord": "https://discord.omnisecai.com",
+      "support": "https://support.omnisecai.com"
+    }
+  },
+  "logo": {
+    "main": "/lovable-uploads/omnisecai-logo.svg",
+    "logoIcon": "/lovable-uploads/omnisecai-icon.svg",
+    "logoFab": "/lovable-uploads/omnisecai-fab.svg",
+    "logoWatermark": "/lovable-uploads/omnisecai-watermark.svg"
+  }
+}
